@@ -1,5 +1,6 @@
 "use client";
 import EcButton from "@/components/EcButton/EcButton";
+import config from "@/config/config";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
@@ -19,6 +20,8 @@ import {
   ShieldCheck,
   Smartphone,
 } from "lucide-react";
+import Image from "next/image";
+import logo from "../../../public/logo.png";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
@@ -86,13 +89,24 @@ const LoginPage = () => {
       const res = await login(payload).unwrap();
       const user = decodeJWT(res.data.accessToken) as TUser;
       dispatch(setUser({ user: user, token: res.data.accessToken }));
+      if (typeof document !== "undefined") {
+        const maxAge = Math.floor(
+          Number(config.token_data.access_token_cookie_expires || 86400000) /
+            1000
+        );
+        const domainAttr =
+          config.env === "production" && config.main_domain
+            ? `; domain=.${config.main_domain}`
+            : "";
+        document.cookie = `_app.ec.at=${res.data.accessToken}; path=/; max-age=${maxAge}; SameSite=Lax${domainAttr}`;
+      }
       toast({
         className: "bg-success text-success-foreground border-none",
         title: "Welcome Back!",
         description: res.message || "Logged in successfully.",
       });
       // Land on profile first — avoids permission redirects on other dashboard pages
-      router.push("/dashboard/accounts");
+      router.replace("/dashboard/accounts");
     } catch (error) {
       const err = (error as { data: TErrorResponse }).data;
       if (err?.errorMessages?.length) {
@@ -191,6 +205,18 @@ const LoginPage = () => {
         </div>
 
         <div className="relative z-10 w-full max-w-[420px] animate-in fade-in slide-in-from-right-4 duration-700">
+          <div className="mb-6 flex justify-start">
+            <div className="bg-black px-3.5 py-1.5 rounded-xl shadow-xs inline-flex items-center">
+              <Image
+                src={logo}
+                alt="TechMela Logo"
+                width={130}
+                height={34}
+                className="h-7 w-auto object-contain"
+                priority
+              />
+            </div>
+          </div>
           <div className="mb-8 space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Sign in

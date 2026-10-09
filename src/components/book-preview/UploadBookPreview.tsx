@@ -1,8 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
-import {
-  useGetBookPreviewPresignedUrlMutation,
-  useUploadBookPreviewMutation,
-} from "@/redux/features/bookPreview/bookPreviewApi";
+import { useUploadBookPreviewMutation } from "@/redux/features/bookPreview/bookPreviewApi";
 import { Cross2Icon, FileTextIcon } from "@radix-ui/react-icons";
 import { ChangeEvent, useState } from "react";
 import { Button } from "../ui/button";
@@ -23,7 +20,6 @@ const UploadBookPreview = ({
 }) => {
   const { toast } = useToast();
   const [uploadBookPreview, { isLoading }] = useUploadBookPreviewMutation();
-  const [getPresignedUrl] = useGetBookPreviewPresignedUrlMutation();
   const [isUploading, setIsUploading] = useState(false);
   const [previews, setPreviews] = useState<File[]>([]);
   const [previewType, setPreviewType] = useState<"short" | "full" | "free">(
@@ -124,44 +120,13 @@ const UploadBookPreview = ({
   const handleUpload = async () => {
     setIsUploading(true);
     try {
-      const uploadedPreviews = [];
+      const formData = new FormData();
+      previews.forEach((preview) => {
+        formData.append("files", preview);
+      });
+      formData.append("previewType", previewType);
 
-      for (const preview of previews) {
-        // 1. Get presigned URL
-        const res = await getPresignedUrl({
-          filename: preview.name,
-          contentType: preview.type,
-          previewType,
-        }).unwrap();
-
-        const { presignedUrl, url } = res.data;
-
-        // 2. Upload directly to R2
-        const uploadRes = await fetch(presignedUrl, {
-          method: "PUT",
-          body: preview,
-          headers: {
-            "Content-Type": preview.type,
-          },
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error(`Failed to upload ${preview.name} to Cloudflare R2`);
-        }
-
-        // 3. Keep track of successfully uploaded previews
-        uploadedPreviews.push({
-          // src: key,
-          src: url,
-          alt: preview.name,
-          previewType,
-        });
-      }
-
-      // 4. Save metadata to backend
-      const res = await uploadBookPreview({
-        previews: uploadedPreviews,
-      }).unwrap();
+      const res = await uploadBookPreview(formData).unwrap();
       if (!res.error) {
         setPreviews([]);
       }

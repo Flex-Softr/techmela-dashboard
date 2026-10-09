@@ -28,7 +28,9 @@ export default async function getAccessToken(request: NextRequest) {
 
     const cookieOption = {
       domain:
-        config.env === "production" ? `.${config.main_domain}` : "localhost",
+        config.env === "production" && config.main_domain
+          ? `.${config.main_domain}`
+          : undefined,
       httpOnly: config.env === "production",
       secure: config.env === "production",
       sameSite: "lax" as const,

@@ -47,14 +47,16 @@ const ForgetPasswordPage = () => {
       <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-xl border border-slate-100 px-6 sm:px-8 py-8 sm:py-10">
         <div className="text-center mb-6 space-y-2">
           <div className="flex justify-center mb-4">
-            <Image
-              src={logo}
-              alt="Logo"
-              width={180}
-              height={100}
-              className="w-40 h-auto"
-              priority
-            />
+            <div className="bg-black px-4 py-2 rounded-xl shadow-xs inline-flex items-center">
+              <Image
+                src={logo}
+                alt="TechMela Logo"
+                width={160}
+                height={40}
+                className="w-36 h-auto object-contain"
+                priority
+              />
+            </div>
           </div>
 
           <div className="flex justify-center mb-2 text-primary">

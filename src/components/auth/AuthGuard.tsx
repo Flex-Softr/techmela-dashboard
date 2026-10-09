@@ -19,7 +19,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useAppDispatch();
   const { token, user } = useAppSelector((state) => state.auth);
 
-  const { data, isLoading, isError, isFetching, isUninitialized } =
+  const { data, isLoading, isError, error, isFetching, isUninitialized } =
     useGetProfileQuery(undefined, {
       skip: !token,
     });
@@ -43,10 +43,16 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     }
 
     if (isError) {
-      dispatch(logOut());
-      router.replace("/login");
+      const errStatus = (error as { status?: number | string })?.status;
+      if (errStatus === 401) {
+        dispatch(logOut());
+        if (typeof document !== "undefined") {
+          document.cookie = "_app.ec.at=; path=/; max-age=0; SameSite=Lax";
+        }
+        router.replace("/login");
+      }
     }
-  }, [data, isLoading, isFetching, isError, dispatch, router]);
+  }, [data, isLoading, isFetching, isError, error, dispatch, router]);
 
   const waitingForProfile =
     !!token && (isUninitialized || isLoading || (isFetching && !data));

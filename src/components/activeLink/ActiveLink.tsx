@@ -27,10 +27,8 @@ const ActiveLink = ({
   const pathname = usePathname();
   const isActive = pathname === href;
   const acClass = isActive
-    ? activeClassName
-      ? activeClassName
-      : "bg-primary/10 text-primary font-semibold"
-    : "text-foreground/85 hover:bg-muted hover:text-foreground font-medium";
+    ? activeClassName || "bg-white text-primary font-semibold shadow-xs"
+    : "text-white/85 hover:bg-white/10 hover:text-white font-medium";
 
   return (
     <Link href={href} onClick={onClick}>
@@ -47,7 +45,7 @@ const ActiveLink = ({
               "shrink-0 transition-colors duration-200",
               isActive
                 ? "text-primary"
-                : "text-foreground/75 group-hover:text-foreground"
+                : "text-white/75 group-hover:text-white"
             )}
           >
             {icon}

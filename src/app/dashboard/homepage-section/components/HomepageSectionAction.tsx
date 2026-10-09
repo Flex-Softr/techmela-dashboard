@@ -80,7 +80,7 @@ const HomepageSectionAction = ({
           <p className="text-gray-500">
             Are you sure you want to delete{" "}
             <span className="font-semibold">
-              {homepageSection.title || homepageSection.subtitle}
+              {homepageSection.title || homepageSection.subtitle || "this section"}
             </span>
             ? This action cannot be undone.
           </p>

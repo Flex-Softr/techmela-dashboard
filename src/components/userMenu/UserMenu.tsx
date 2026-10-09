@@ -1,4 +1,5 @@
 "use client";
+import config from "@/config/config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -49,7 +50,14 @@ const UserMenu = () => {
     try {
       await logoutUser({}).unwrap();
       dispatch(logOut());
-      router.push("/login");
+      if (typeof document !== "undefined") {
+        const domainAttr =
+          config.env === "production" && config.main_domain
+            ? `; domain=.${config.main_domain}`
+            : "";
+        document.cookie = `_app.ec.at=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
+      }
+      router.replace("/login");
     } catch (error) {
       const err = (error as { data: TErrorResponse }).data;
       toast({

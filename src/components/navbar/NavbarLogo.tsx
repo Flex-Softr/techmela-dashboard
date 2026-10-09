@@ -2,7 +2,7 @@
 import { useSidebar } from "@/providers/SidebarProvider";
 import Image from "next/image";
 import Link from "next/link";
-import logo from "../../../public/logo.png";
+import logo from "../../../public/techmela-lightlogo.png";
 
 export default function NavbarLogo() {
   const { isCollapsed } = useSidebar();
@@ -12,14 +12,16 @@ export default function NavbarLogo() {
       href="/dashboard"
       className={isCollapsed ? "block md:hidden" : "block"}
     >
-      <Image
-        className="w-24 h-16 object-contain"
-        src={logo}
-        alt="Logo"
-        priority={true}
-        width={100}
-        height={100}
-      />
+      <div className="bg-black px-3 py-1.5 rounded-lg flex items-center shadow-xs hover:opacity-95 transition-opacity">
+        <Image
+          className="h-7 w-auto object-contain"
+          src={logo}
+          alt="TechMela Logo"
+          priority={true}
+          width={130}
+          height={32}
+        />
+      </div>
     </Link>
   );
 }

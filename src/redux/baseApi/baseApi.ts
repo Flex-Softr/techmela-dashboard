@@ -27,21 +27,67 @@ const customBaseQueryWithRefreshToken: BaseQueryFn = async (
 ) => {
   let result = await baseQuery(args, api, extraOptions);
   if (result?.error?.status === 401) {
-    // request for getting access token
-    const res = await fetch(
-      `${config.api_base_url}/server-api/v1/auth/access-token`,
-      {
-        method: "POST",
-        credentials: "include",
+    const urlStr = typeof args === "string" ? args : args.url;
+    // Don't attempt token refresh on auth endpoints (login, logout, access-token)
+    if (urlStr?.includes("/auth/")) {
+      return result;
+    }
+
+    try {
+      // request for getting access token
+      const res = await fetch(
+        `${config.api_base_url}/server-api/v1/auth/access-token`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.data?.accessToken) {
+          const user = (api.getState() as RootState).auth.user;
+          api.dispatch(setUser({ user: user, token: data.data.accessToken }));
+          if (typeof document !== "undefined") {
+            const maxAge = Math.floor(
+              Number(config.token_data.access_token_cookie_expires || 86400000) /
+                1000
+            );
+            const domainAttr =
+              config.env === "production" && config.main_domain
+                ? `; domain=.${config.main_domain}`
+                : "";
+            document.cookie = `_app.ec.at=${data.data.accessToken}; path=/; max-age=${maxAge}; SameSite=Lax${domainAttr}`;
+          }
+          result = await baseQuery(args, api, extraOptions);
+        } else {
+          api.dispatch(logOut());
+          if (typeof document !== "undefined") {
+            const domainAttr =
+              config.env === "production" && config.main_domain
+                ? `; domain=.${config.main_domain}`
+                : "";
+            document.cookie = `_app.ec.at=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
+          }
+        }
+      } else {
+        api.dispatch(logOut());
+        if (typeof document !== "undefined") {
+          const domainAttr =
+            config.env === "production" && config.main_domain
+              ? `; domain=.${config.main_domain}`
+              : "";
+          document.cookie = `_app.ec.at=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
+        }
       }
-    );
-    const data = await res.json();
-    if (data.data?.accessToken) {
-      const user = (api.getState() as RootState).auth.user;
-      api.dispatch(setUser({ user: user, token: data.data.accessToken }));
-      result = await baseQuery(args, api, extraOptions);
-    } else {
+    } catch {
       api.dispatch(logOut());
+      if (typeof document !== "undefined") {
+        const domainAttr =
+          config.env === "production" && config.main_domain
+            ? `; domain=.${config.main_domain}`
+            : "";
+        document.cookie = `_app.ec.at=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
+      }
     }
   }
   return result;

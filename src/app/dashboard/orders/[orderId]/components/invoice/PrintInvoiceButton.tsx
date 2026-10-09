@@ -92,13 +92,15 @@ const PrintInvoiceButton = ({ orders }: { orders: TOrders[] }) => {
                     </p>
                   )}
                 </div>
-                <Image
-                  src={logo}
-                  alt="Logo"
-                  className="w-48 h-auto object-contain mix-blend-multiply"
-                  priority
-                  placeholder="blur"
-                />
+                <div className="bg-black px-3.5 py-1.5 rounded-lg inline-flex items-center">
+                  <Image
+                    src={logo}
+                    alt="TechMela Logo"
+                    className="w-44 h-auto object-contain"
+                    priority
+                    placeholder="blur"
+                  />
+                </div>
               </div>
 
               {/* Content Wrapper */}

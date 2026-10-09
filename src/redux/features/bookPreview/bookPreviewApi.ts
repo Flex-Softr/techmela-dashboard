@@ -2,25 +2,15 @@ import baseApi from "../../baseApi/baseApi";
 
 const bookPreviewApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getBookPreviewPresignedUrl: builder.mutation({
-      query: (payload: {
-        filename: string;
-        contentType: string;
-        previewType?: string;
-        bookId?: string;
-      }) => ({
-        url: "/book-previews/presigned-url",
-        method: "POST",
-        body: payload,
-      }),
-    }),
     uploadBookPreview: builder.mutation({
-      query: (payload: {
-        previews: { src: string; alt: string; previewType?: string }[];
-      }) => ({
+      query: (
+        body:
+          | FormData
+          | { previews: { src: string; alt: string; previewType?: string }[] }
+      ) => ({
         url: "/book-previews",
         method: "POST",
-        body: payload,
+        body,
       }),
       invalidatesTags: ["bookPreviews"],
     }),
@@ -56,10 +46,10 @@ const bookPreviewApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetBookPreviewPresignedUrlMutation,
   useUploadBookPreviewMutation,
   useGetBookPreviewsQuery,
   useDeleteBookPreviewMutation,
 } = bookPreviewApi;
 
 export default bookPreviewApi;
+

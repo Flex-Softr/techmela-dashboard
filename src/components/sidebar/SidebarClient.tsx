@@ -441,10 +441,14 @@ export function SidebarClient({ permissions }: TProps) {
     return items;
   };
 
+  const canReadContactMessages =
+    permissions.isSuperAdmin || permissions.manageAdminOrStaff;
+
   const { data: unreadCountData } = useGetUnreadContactMessagesCountQuery(
     undefined,
     {
       pollingInterval: 600000,
+      skip: !canReadContactMessages,
     }
   );
   const unreadCount = unreadCountData?.data || 0;
@@ -462,7 +466,7 @@ export function SidebarClient({ permissions }: TProps) {
       )}
       <aside
         className={cn(
-          "fixed z-50 flex h-screen flex-col border-r border-border bg-card text-foreground transition-all duration-300 md:relative md:top-auto md:h-[calc(100vh-56px)] overflow-y-auto no-scrollbar",
+          "fixed z-50 flex h-screen flex-col border-r border-black/10 bg-primary text-primary-foreground transition-all duration-300 md:relative md:top-auto md:h-[calc(100vh-56px)] overflow-y-auto no-scrollbar",
           isCollapsed
             ? "-translate-x-full md:translate-x-0 md:w-[68px]"
             : "translate-x-0 w-64 box-border"
@@ -475,18 +479,20 @@ export function SidebarClient({ permissions }: TProps) {
           )}
         >
           {!isCollapsed && (
-            <div className="mb-2 flex items-center justify-between border-b border-border px-1 py-2 md:hidden">
-              <Image
-                src={logo}
-                alt="Logo"
-                width={80}
-                height={40}
-                className="h-9 w-auto object-contain"
-                priority
-              />
+            <div className="mb-2 flex items-center justify-between border-b border-white/15 px-1 py-2 md:hidden">
+              <div className="bg-black px-2.5 py-1 rounded-lg flex items-center shadow-xs">
+                <Image
+                  src={logo}
+                  alt="TechMela Logo"
+                  width={100}
+                  height={36}
+                  className="h-7 w-auto object-contain"
+                  priority
+                />
+              </div>
               <button
                 onClick={toggleSidebar}
-                className="rounded-lg p-2 text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
+                className="rounded-lg p-2 text-white/80 transition-colors hover:bg-white/15 hover:text-white"
                 aria-label="Close sidebar"
               >
                 <X size={18} strokeWidth={ICON_STROKE} />
@@ -513,7 +519,7 @@ export function SidebarClient({ permissions }: TProps) {
             )}
           </div>
 
-          {!isCollapsed && <div className="mx-1 my-2 h-px bg-border" />}
+          {!isCollapsed && <div className="mx-1 my-2 h-px bg-white/15" />}
 
           {isCollapsed ? (
             <div className="flex w-full flex-col items-center gap-1 py-1">
@@ -529,7 +535,7 @@ export function SidebarClient({ permissions }: TProps) {
                       ) : undefined}
                       {item.href === "/dashboard/contact-messages" &&
                         unreadCount > 0 && (
-                          <span className="absolute -right-1.5 -top-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-destructive px-0.5 text-[9px] text-destructive-foreground ring-2 ring-card">
+                          <span className="absolute -right-1.5 -top-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-destructive px-0.5 text-[9px] text-destructive-foreground ring-2 ring-primary">
                             {unreadCount > 99 ? "99+" : unreadCount}
                           </span>
                         )}
@@ -558,10 +564,10 @@ export function SidebarClient({ permissions }: TProps) {
                     >
                       <AccordionTrigger
                         className={cn(
-                          "rounded-lg border-b-0 px-2.5 py-2 text-sm transition-colors duration-200 hover:no-underline group [&>svg]:h-4 [&>svg]:w-4 [&>svg]:text-foreground/55",
+                          "rounded-lg border-b-0 px-2.5 py-2 text-sm transition-colors duration-200 hover:no-underline group [&>svg]:h-4 [&>svg]:w-4",
                           isGroupActive
-                            ? "bg-primary/10 font-semibold text-primary"
-                            : "font-medium text-foreground/90 hover:bg-muted hover:text-foreground"
+                            ? "bg-white/15 font-semibold text-white [&>svg]:text-white"
+                            : "font-medium text-white/85 hover:bg-white/10 hover:text-white [&>svg]:text-white/70 group-hover:[&>svg]:text-white"
                         )}
                       >
                         <div className="flex items-center gap-2.5">
@@ -572,12 +578,12 @@ export function SidebarClient({ permissions }: TProps) {
                               className={cn(
                                 "transition-colors",
                                 isGroupActive
-                                  ? "text-primary"
-                                  : "text-foreground/80 group-hover:text-foreground"
+                                  ? "text-white"
+                                  : "text-white/80 group-hover:text-white"
                               )}
                             />
                             {group.key === "customers" && unreadCount > 0 && (
-                              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
+                              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-primary" />
                             )}
                           </div>
                           <span className="text-sm tracking-wide">
@@ -585,7 +591,7 @@ export function SidebarClient({ permissions }: TProps) {
                           </span>
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="ml-3 border-l border-border pb-1 pl-3 pt-0.5">
+                      <AccordionContent className="ml-3 border-l border-white/20 pb-1 pl-3 pt-0.5">
                         {group.items.map((item, idx) => (
                           <NavLink
                             key={idx}
@@ -617,7 +623,7 @@ export function SidebarClient({ permissions }: TProps) {
             </Accordion>
           )}
 
-          {!isCollapsed && <div className="mx-1 my-2 h-px bg-border" />}
+          {!isCollapsed && <div className="mx-1 my-2 h-px bg-white/15" />}
 
           <NavLink
             href="/dashboard/accounts"

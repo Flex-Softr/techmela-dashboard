@@ -1,14 +1,10 @@
-import {
-  useGetPresignedUrlMutation,
-  useUploadImageMutation,
-} from "@/redux/features/imageSelector/imageApi";
+import { useUploadImageMutation } from "@/redux/features/imageSelector/imageApi";
 import { useToast } from "@/components/ui/use-toast";
 import { Cross2Icon, ImageIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { ChangeEvent, useState } from "react";
 import { Button } from "../ui/button";
 import config from "@/config/config";
-import { convertImageToWebp } from "@/lib/convertImageToWebp";
 import {
   Select,
   SelectContent,
@@ -24,7 +20,6 @@ const UploadFile = ({
 }) => {
   const { toast } = useToast();
   const [uploadImage, { isLoading }] = useUploadImageMutation();
-  const [getPresignedUrl] = useGetPresignedUrlMutation();
   const [isUploading, setIsUploading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [selectedPurpose, setSelectedPurpose] = useState<
@@ -129,46 +124,13 @@ const UploadFile = ({
   const handleUpload = async () => {
     setIsUploading(true);
     try {
-      const uploadedImages = [];
+      const formData = new FormData();
+      images.forEach((file) => {
+        formData.append("images", file);
+      });
+      formData.append("purpose", selectedPurpose);
 
-      for (const image of images) {
-        const webpImage = await convertImageToWebp(image);
-
-        // 1. Get presigned URL
-        const res = await getPresignedUrl({
-          filename: webpImage.name,
-          contentType: webpImage.type,
-          purpose: selectedPurpose,
-        }).unwrap();
-
-        const { presignedUrl, url } = res.data;
-
-        // 2. Upload directly to R2
-        const uploadRes = await fetch(presignedUrl, {
-          method: "PUT",
-          body: webpImage,
-          headers: {
-            "Content-Type": webpImage.type,
-          },
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error(
-            `Failed to upload ${webpImage.name} to Cloudflare R2`
-          );
-        }
-
-        // 3. Keep track of successfully uploaded images
-        uploadedImages.push({
-          // src: key,
-          src: url,
-          alt: webpImage.name,
-          purpose: selectedPurpose,
-        });
-      }
-
-      // 4. Save metadata to backend
-      const res = await uploadImage({ images: uploadedImages }).unwrap();
+      const res = await uploadImage(formData).unwrap();
       if (!res.error) {
         setImages([]);
       }

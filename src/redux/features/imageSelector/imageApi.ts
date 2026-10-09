@@ -2,25 +2,15 @@ import baseApi from "@/redux/baseApi/baseApi";
 
 const mediaApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getPresignedUrl: builder.mutation({
-      query: (payload: {
-        filename: string;
-        contentType: string;
-        purpose?: string;
-        refId?: string;
-      }) => ({
-        url: "/images/presigned-url",
-        method: "POST",
-        body: payload,
-      }),
-    }),
     uploadImage: builder.mutation({
-      query: (payload: {
-        images: { src: string; alt: string; purpose?: string }[];
-      }) => ({
+      query: (
+        body:
+          | FormData
+          | { images: { src: string; alt: string; purpose?: string }[] }
+      ) => ({
         url: "/images",
         method: "POST",
-        body: payload,
+        body,
       }),
       invalidatesTags: ["images"],
     }),
@@ -52,8 +42,8 @@ const mediaApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetPresignedUrlMutation,
   useUploadImageMutation,
   useGetImagesQuery,
   useDeleteImageMutation,
 } = mediaApi;
+

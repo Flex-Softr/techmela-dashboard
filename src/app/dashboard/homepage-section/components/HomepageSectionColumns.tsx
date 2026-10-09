@@ -1,8 +1,10 @@
 "use client";
 
+import { formatImageSrc } from "@/lib/utils";
 import { ICollection } from "@/types/collection";
 import { THomePageSection } from "@/types/homepageSection";
 import { ColumnDef } from "@tanstack/react-table";
+import Image from "next/image";
 import HomepageSectionAction from "./HomepageSectionAction";
 import UpdateHomepageSectionActiveStatus from "./UpdateHomepageSectionActiveStatus";
 
@@ -12,10 +14,36 @@ export const columns: ColumnDef<THomePageSection>[] = [
     header: "SL",
   },
   {
+    accessorKey: "image",
+    header: "Image",
+    cell: ({ row }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const img = row.original.image as any;
+      if (!img?.src) {
+        return <span className="text-xs text-muted-foreground">-</span>;
+      }
+      const src = formatImageSrc(img.src);
+      return (
+        <div className="relative h-10 w-16 overflow-hidden rounded border border-border bg-muted">
+          <Image
+            src={src}
+            alt={row.original.title || "Section image"}
+            fill
+            className="object-contain"
+          />
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "title",
     header: "Title",
     cell: ({ row }) => (
-      <span className="whitespace-nowrap">{row.original.title}</span>
+      <span className="whitespace-nowrap">
+        {row.original.title || (
+          <span className="text-xs text-muted-foreground italic">None</span>
+        )}
+      </span>
     ),
   },
   {
@@ -23,7 +51,9 @@ export const columns: ColumnDef<THomePageSection>[] = [
     header: "Subtitle",
     cell: ({ row }) => (
       <span className="block w-20 sm:w-auto truncate sm:whitespace-normal">
-        {row.original.subtitle}
+        {row.original.subtitle || (
+          <span className="text-xs text-muted-foreground italic">-</span>
+        )}
       </span>
     ),
   },

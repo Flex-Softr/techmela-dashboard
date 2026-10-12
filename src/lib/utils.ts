@@ -35,29 +35,66 @@ export function formatImageSrc(src: string | undefined | null): string {
   if (!src) return "/placeholder.png";
 
   // Trim and replace backslashes
-  let cleanSrc =
-    config.env === "development" ? src.trim().replace(/\\/g, "/") : src;
+  let cleanSrc = src.trim().replace(/\\/g, "/");
 
   // Check for string "null" or "undefined"
   if (cleanSrc === "null" || cleanSrc === "undefined" || !cleanSrc) {
     return "/placeholder.png";
   }
 
-  // If already absolute, just return the cleaned URL
+  // Base URL normalization: remove trailing slash, and remove any trailing /server-api or /server-api/v1
+  const rawBaseUrl = (config.api_base_url || "").trim().replace(/\/+$/, "");
+  const origin = rawBaseUrl.replace(/\/server-api(\/v1)?$/i, "");
+
+  // If already absolute HTTP/HTTPS URL
   if (cleanSrc.startsWith("http://") || cleanSrc.startsWith("https://")) {
+    if (config.env === "production" && cleanSrc.includes("localhost:5000") && origin) {
+      cleanSrc = cleanSrc.replace(/http:\/\/localhost:5000/g, origin);
+    }
+    if (
+      cleanSrc.includes("/server-api/") &&
+      !cleanSrc.includes("/server-api/uploads/") &&
+      !cleanSrc.includes("/server-api/v1/")
+    ) {
+      cleanSrc = cleanSrc.replace(
+        /\/server-api\/(?!uploads\/|v1\/)/,
+        "/server-api/uploads/public/"
+      );
+    }
+    cleanSrc = cleanSrc.replace(/\/server-api\/server-api\//g, "/server-api/");
     return cleanSrc;
   }
 
-  // Remove leading slash if present to avoid double slash when joining
+  // Local dashboard public assets
+  if (
+    cleanSrc.startsWith("/placeholder") ||
+    cleanSrc.startsWith("/icons") ||
+    cleanSrc.startsWith("/images")
+  ) {
+    return cleanSrc;
+  }
+
+  if (cleanSrc === "placeholder.png" || cleanSrc === "placeholder.webp") {
+    return `/${cleanSrc}`;
+  }
+
+  // Strip leading slash if present
   if (cleanSrc.startsWith("/")) {
     cleanSrc = cleanSrc.substring(1);
   }
 
-  const baseUrl = config.api_base_url || "";
-  // Ensure base URL doesn't have trailing slash if we're joining
-  const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+  // If cleanSrc starts with server-api/, strip it
+  if (cleanSrc.startsWith("server-api/")) {
+    cleanSrc = cleanSrc.replace(/^server-api\//, "");
+  }
 
-  return `${cleanBaseUrl}/server-api/${cleanSrc}`;
+  // If cleanSrc starts with uploads/
+  if (cleanSrc.startsWith("uploads/")) {
+    return `${origin}/server-api/${cleanSrc}`;
+  }
+
+  // For backend relative storage keys (e.g. "general/...", "products/...")
+  return `${origin}/server-api/uploads/public/${cleanSrc}`;
 }
 
 import { STOCK_STATUS, STOCK_STATUS_LABELS } from "@/const/products";

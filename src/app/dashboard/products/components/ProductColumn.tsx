@@ -123,8 +123,8 @@ export const ProductColumns: ColumnDef<IAdminProduct>[] = [
       return (
         <div className="h-16 w-16 relative p-2 my-3 shrink-0">
           <Image
-            src={formatImageSrc(thumbnail.src)}
-            alt={thumbnail.alt}
+            src={formatImageSrc(thumbnail?.src)}
+            alt={thumbnail?.alt || row.original.title || "Product image"}
             fill
             className="object-cover rounded shadow-sm border border-gray-100"
             sizes="64px"

@@ -57,8 +57,8 @@ export const columns: ColumnDef<TOrderedProducts>[] = [
             <Image
               width={100}
               height={100}
-              src={formatImageSrc(image.src)}
-              alt={image.alt}
+              src={formatImageSrc(image?.src)}
+              alt={image?.alt || title || "Product image"}
             />
           </div>
           <div>
